@@ -35,8 +35,10 @@ import { Link, useParams } from 'react-router';
 // };
 
 function RecipeDetail() {
-  const [recipe,setRecipe] = useState({})
+  const [recipe, setRecipe] = useState({})
   const { id } = useParams();
+  const [isLoading, setIsloading] = useState(true);
+
 
   async function fetchRecipe(params) {
     try {
@@ -47,11 +49,28 @@ function RecipeDetail() {
     } catch (error) {
 
     }
+    setIsloading(false);
   }
 
   useEffect(() => {
     fetchRecipe()
   }, [])
+
+  if (isLoading) {
+  return (
+    <div className="min-h-[80vh] flex flex-col justify-center items-center gap-5 px-4 bg-[#faf7f2]">
+      <div className="w-12 h-12 border-[5px] border-[#e8d8c3] border-t-[#795548] rounded-full animate-spin"></div>
+
+      <p className="text-[#795548] text-base sm:text-lg md:text-xl font-semibold tracking-wide text-center">
+        Preparing delicious recipes...
+      </p>
+
+      <span className="text-[#9a7966] text-sm text-center">
+        Please wait a moment
+      </span>
+    </div>
+  );
+}
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">

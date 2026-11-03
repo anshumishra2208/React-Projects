@@ -65,87 +65,141 @@ import RecipeCard from '../components/RecipeCard';
 // ];
 
 function Home() {
-  const [recipes,setRecipies] = useState([])
-  const [total,setTotal] = useState(0);
-  const [isLoading,setIsloading] = useState(true);
-  
-  async function fetchRecipes(skipCount,query) {
+  const [recipes, setRecipies] = useState([])
+  const [total, setTotal] = useState(0);
+  const [isLoading, setIsloading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  async function fetchRecipes(skipCount, query) {
 
     try {
       let url = `https://dummyjson.com/recipes?limit=9&skip=${skipCount}`
 
-      if(query){
-        url = `https://dummyjson.com/recipes/search?limit=9&skip=${skipCount}&q=${query}`
+      if (query) {
+        url = `https://dummyjson.com/recipes/search?limit=3&skip=${skipCount}&q=${query}`
       }
 
       const response = await fetch(url);
       const data = await response.json();
-      setRecipies((prev)=> skipCount===0 ? data.recipes : [...prev,...data.recipes]);
-      setTotal(data.total)
-      
+      setRecipies((prev) => skipCount === 0 ? data.recipes : [...prev, ...data.recipes]);
+      setTotal(data.total);
+
     } catch (error) {
-      
+
     }
     setIsloading(false)
 
   }
 
-  function handleSearch(e){
+  function handleSearch(e) {
+    setIsloading(true);
     e.preventDefault();
     let formData = new FormData(e.target);
-    let query = formData.get("query");
-    console.log(query);
-    fetchRecipes(0,query);
+    let query = formData.get("query").trim();
+    setSearchQuery(query)
+    fetchRecipes(0, query);
 
   }
 
-  useEffect(()=>{
+  useEffect(() => {
     fetchRecipes(0);
-  },[])
+  }, [])
 
   if (isLoading) {
+    return (
+      <div className="min-h-[80vh] flex flex-col justify-center items-center gap-5 px-4 bg-[#faf7f2]">
+        <div className="w-12 h-12 border-[5px] border-[#e8d8c3] border-t-[#795548] rounded-full animate-spin"></div>
+
+        <p className="text-[#795548] text-base sm:text-lg md:text-xl font-semibold tracking-wide text-center">
+          Preparing delicious recipes...
+        </p>
+
+        <span className="text-[#9a7966] text-sm text-center">
+          Please wait a moment
+        </span>
+      </div>
+    );
+  }
+
+if (!isLoading && recipes.length === 0) {
   return (
-    <div className="min-h-[80vh] flex flex-col justify-center items-center gap-5 px-4 bg-[#faf7f2]">
-      <div className="w-12 h-12 border-[5px] border-[#e8d8c3] border-t-[#795548] rounded-full animate-spin"></div>
+    <main className="max-w-6xl mx-auto px-4 py-8">
 
-      <p className="text-[#795548] text-base sm:text-lg md:text-xl font-semibold tracking-wide text-center">
-        Preparing delicious recipes...
-      </p>
+      {/* Search Form */}
+      <form
+        className="flex gap-2 max-w-md mx-auto mb-8"
+        onSubmit={handleSearch}
+      >
+        <input
+          type="text"
+          name="query"
+          placeholder="Search recipes..."
+          className="flex-1 border border-border rounded px-3 py-2 bg-card text-text outline-none focus:border-accent"
+        />
 
-      <span className="text-[#9a7966] text-sm text-center">
-        Please wait a moment
-      </span>
-    </div>
+        <button
+          type="submit"
+          className="bg-accent hover:bg-accent-hover text-white rounded px-4 py-2 font-medium"
+        >
+          Search
+        </button>
+      </form>
+
+      {/* No Recipes Found */}
+      <div className="min-h-[65vh] flex flex-col justify-center items-center text-center px-4 py-10 bg-[#faf7f2] rounded-xl">
+
+        <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-[#f3e8dc] flex items-center justify-center mb-6">
+          <span className="text-4xl sm:text-5xl">🍽️</span>
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-[#795548] mb-3">
+          No Recipes Found!
+        </h2>
+
+        <p className="text-[#9a7966] text-base sm:text-lg max-w-md leading-relaxed">
+          Sorry, we couldn't find any recipes for{" "}
+          <span className="font-bold text-[#795548]">
+            "{searchQuery}"
+          </span>.
+        </p>
+
+        <p className="text-sm text-[#a1887f] mt-3">
+          Try searching with a different recipe name.
+        </p>
+
+      </div>
+
+    </main>
   );
 }
 
   return (
     <main className="max-w-6xl mx-auto px-4 py-8">
-      
+
       <form className="flex gap-2 max-w-md mx-auto mb-8" onSubmit={handleSearch}>
         <input
-        
+
           type="text"
           name='query'
           placeholder="Search recipes..."
           className="flex-1 border border-border rounded px-3 py-2 bg-card text-text outline-none focus:border-accent"
         />
-        <button type="submit"  className="bg-accent hover:bg-accent-hover text-white rounded px-4 py-2 font-medium">
+        <button type="submit" className="bg-accent hover:bg-accent-hover text-white rounded px-4 py-2 font-medium">
           Search
         </button>
       </form>
 
-      
+
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {recipes.map((recipe) => (
           <RecipeCard key={recipe.id} recipe={recipe} />
         ))}
       </div>
 
-      { recipes.length < total && <div className="text-center mt-8">
+      {recipes.length < total && <div className="text-center mt-8">
         <button
-          type="button" onClick={()=>{
-            fetchRecipes(recipes.length)
+          type="button" onClick={() => {
+            fetchRecipes(recipes.length, searchQuery)
           }}
           className="bg-accent hover:bg-accent-hover text-white rounded px-6 py-2 font-medium"
         >
@@ -153,7 +207,7 @@ function Home() {
         </button>
       </div>}
 
-      
+
     </main>
   );
 }

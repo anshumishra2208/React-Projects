@@ -1,5 +1,5 @@
 import React from 'react';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 
 function RecipeCard({ recipe }) {
   const totalTime = recipe.prepTimeMinutes + recipe.cookTimeMinutes;
